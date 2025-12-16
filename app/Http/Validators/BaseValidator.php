@@ -7,9 +7,20 @@ abstract class BaseValidator
 {
     protected $rules = [];
 
-    public function validate(array $data)
+    public function validate($data, $except = [])
     {
-        $validator = Validator::make($data, $this->rules);
+        $rules = [];
+        if (!empty($except)) {
+            $rules = array_filter(
+                $this->rules,
+                fn($key) => !in_array($key, $except),
+                ARRAY_FILTER_USE_KEY
+            );
+        } else {
+            $rules = $this->rules;
+        }
+
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) throw new \InvalidArgumentException($validator->errors()->first());
 

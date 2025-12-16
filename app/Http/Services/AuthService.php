@@ -41,6 +41,24 @@ class AuthService
         return $token;
     }
 
+    public function login($credentials)
+    {
+        // Validate required fields
+        $this->validator->validate($credentials, ['username']);
+
+        // Search for user
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !password_verify($credentials['password'], $user->password)) {
+            throw new \Exception('Correo electrónico o contraseña incorrectos.');
+        }
+
+        // Generate JWT token
+        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role]);
+
+        return $token;
+    }
+
     public function redirect()
     {
         return Socialite::driver('google')->stateless()->redirect();

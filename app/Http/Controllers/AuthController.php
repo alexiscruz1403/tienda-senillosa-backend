@@ -26,6 +26,17 @@ class AuthController extends Controller
         }
     }
 
+    public function login(Request $request)
+    {
+        try{
+            $credentials = $request->all();
+            $token = $this->authService->login($credentials);
+            return ApiResponse::success(['token' => $token], 'Inicio de sesión exitoso', 200);
+        }catch(\Exception $e){
+            return ApiResponse::error('Error al iniciar sesión', 500, [$e->getMessage()]);
+        }
+    }
+
     public function redirect()
     {
         return $this->authService->redirect();
