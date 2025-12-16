@@ -32,11 +32,11 @@ class AuthService
             'username' => $userData['username'],
             'email' => $userData['email'],
             'password' => bcrypt($userData['password']),
-            'role' => 'cliente',
+            'role' => 'Cliente',
         ]);
 
         // Generate JWT token
-        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role]);
+        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role, 'username' => $user->username]);
 
         return $token;
     }
@@ -54,7 +54,7 @@ class AuthService
         }
 
         // Generate JWT token
-        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role]);
+        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role, 'username' => $user->username]);
 
         return $token;
     }
@@ -91,7 +91,7 @@ class AuthService
             );
         }
 
-        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role]);
+        $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role, 'username' => $user->username]);
 
         return redirect(
             'http://localhost:5173' .
