@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Services;
+namespace App\Services;
 use App\Models\User;
 use App\Http\Validators\AuthValidator;
 use App\Utils\JWTUtil;

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Product extends Model
 {
     use SoftDeletes;
-    
+
     protected $table = 'products';
 
     protected $primaryKey = 'product_id';
@@ -43,4 +43,8 @@ class Product extends Model
         return $this->hasMany(Like::class, 'product_id', 'product_id');
     }
 
+    public function images()
+    {
+        return $this->hasMany(Image::class, 'product_id', 'product_id');
+    }
 }

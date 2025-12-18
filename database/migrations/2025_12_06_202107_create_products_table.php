@@ -17,9 +17,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('brand', 100)->default('Marca Genérica');
             $table->decimal('price', 10, 2);
-            $table->string('category', 100)->default('Remeras');
-            $table->string('gender', 100)->default('Unisex');
-            $table->string('image_url', 255)->nullable();
+            $table->string('category', 100)->default('remeras');
+            $table->string('gender', 100)->default('unisex');
             $table->integer('discount_percentage')->default(0);
             $table->timestamps();
             $table->softDeletes();
