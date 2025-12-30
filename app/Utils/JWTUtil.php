@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class JWTUtil
 {
@@ -36,4 +37,17 @@ class JWTUtil
         }
     }
 
+    public static function validateToken($token)
+    {
+        try{
+            $decoded = JWT::decode(
+                $token,
+                new Key(self::secretKey(), self::algorithm())
+            );
+
+            return (array) $decoded;
+        }catch(\Exception $e){
+            throw new \Exception('Invalid token: ' . $e->getMessage());
+        }
+    }
 }
