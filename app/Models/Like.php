@@ -8,6 +8,8 @@ class Like extends Model
 {
     protected $table = 'likes';
 
+    protected $primaryKey = 'product_id';
+
     protected $fillable = [
         'user_id',
         'product_id'
