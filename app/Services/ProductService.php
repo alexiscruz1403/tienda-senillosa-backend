@@ -35,4 +35,29 @@ class ProductService
             return "Producto añadido a favoritos";
         }
     }
+
+    public function getSingleProduct($productId){
+        $product = Product::with(['stocks', 'images'])->findOrFail($productId);
+
+        return new PublicProductsResource($product);
+    }
+
+    public function getRelatedProducts($productId){
+        $product = Product::findOrFail($productId);
+
+        if(!$product){
+            throw new \Exception("Producto no encontrado");
+        }
+
+        /**$relatedProducts = Product::with(['stocks', 'images'])
+            ->where('category_id', $product->category_id)
+            ->where('product_id', '!=', $productId)
+            ->get();
+        **/
+
+        $relatedProducts = Product::with(['stocks', 'images'])
+            ->get();
+
+        return PublicProductsResource::collection($relatedProducts);
+    }
 }

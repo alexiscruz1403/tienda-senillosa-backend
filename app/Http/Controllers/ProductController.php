@@ -35,4 +35,24 @@ class ProductController extends Controller
             return ApiResponse::error("Error al procesar la solicitud de favorito", 500, $e->getMessage());
         }
     }
+
+    public function getSingleProduct($productId)
+    {
+        try{
+            $product = $this->productService->getSingleProduct($productId);
+            return ApiResponse::success($product, 'Producto obtenido con éxito');
+        }catch(\Exception $e){
+            return ApiResponse::error("Error al obtener el producto", 500, $e->getMessage());
+        }
+    }
+
+    public function getRelatedProducts($productId)
+    {
+        try{
+            $products = $this->productService->getRelatedProducts($productId);
+            return ApiResponse::success($products, 'Productos relacionados obtenidos con éxito');
+        }catch(\Exception $e){
+            return ApiResponse::error("Error al obtener productos relacionados", 500, $e->getMessage());
+        }
+    }
 }
