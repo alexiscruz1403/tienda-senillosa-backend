@@ -3,7 +3,9 @@
 namespace App\Services;
 use App\Models\Product;
 use App\Http\Resources\PublicProductsResource;
+use App\Http\Resources\PublicProductsCollection;
 use App\Models\Like;
+use App\Models\OrderProduct;
 
 class ProductService
 {
@@ -59,5 +61,44 @@ class ProductService
             ->get();
 
         return PublicProductsResource::collection($relatedProducts);
+    }
+
+    public function getManyProducts($search = null, $categories = null, $gender = null, $page = 1, $ordering = null){
+        $products = Product::with(['stocks', 'images'])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('description', 'LIKE', "%{$search}%")
+                    ->orWhere('brand', 'LIKE', "%{$search}%");
+                });
+            })
+            ->when($categories, function ($query, $categories) {
+                $query->whereIn('category', $categories);
+            })
+            ->when($gender, function($query, $gender){
+                $query->where('gender', $gender);
+            })
+            ->when($ordering, function($query, $ordering){
+                switch($ordering){
+                    case 'price_asc':
+                        $query->orderBy('price', 'asc');
+                        break;
+                    case 'price_desc':
+                        $query->orderBy('price', 'desc');
+                        break;
+                    case 'newest':
+                        $query->orderBy('created_at', 'desc');
+                        break;
+                    case 'best_selling':
+                        $query->withCount('orderProducts')
+                            ->orderBy('order_products_count', 'desc');
+                        break;
+                    default:
+                        break;
+                }
+            })
+            ->paginate(1, ['*'], 'page', $page);
+
+        return new PublicProductsCollection($products);
     }
 }

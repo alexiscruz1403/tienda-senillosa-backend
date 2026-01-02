@@ -14,6 +14,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'getManyProducts'])->middleware(OptionalMiddleware::class);
     Route::get('/featured', [ProductController::class, 'getFeaturedProducts'])->middleware(OptionalMiddleware::class);
     Route::post('/{productId}/like', [ProductController::class, 'likeProduct'])->middleware(AuthMiddleware::class);
     Route::get('/{productId}/related', [ProductController::class, 'getRelatedProducts'])->middleware(OptionalMiddleware::class);

@@ -55,4 +55,20 @@ class ProductController extends Controller
             return ApiResponse::error("Error al obtener productos relacionados", 500, $e->getMessage());
         }
     }
+
+    public function getManyProducts()
+    {
+        try{
+            $search = request()->query('search', null);
+            $category = request()->query('category', null);
+            $gender = request()->query('gender', null);
+            $ordering = request()->query('ordering', null);
+            $page = request()->query('page', 1);
+
+            $products = $this->productService->getManyProducts($search, $category, $gender, $page, $ordering);
+            return ApiResponse::success($products, 'Productos obtenidos con éxito');
+        }catch(\Exception $e){
+            return ApiResponse::error("Error al obtener productos", 500, $e->getMessage());
+        }
+    }
 }
