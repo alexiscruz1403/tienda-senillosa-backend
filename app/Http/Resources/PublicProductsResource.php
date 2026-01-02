@@ -33,6 +33,7 @@ class PublicProductsResource extends JsonResource
             'is_liked' => $isLiked,
             'stocks' => StockResource::collection($this->whenLoaded('stocks')),
             'images' => ImageResource::collection($this->whenLoaded('images')),
+            'orders' => $this->orderProducts()->count(),
             'created_at' => $this->created_at,
         ];
     }
