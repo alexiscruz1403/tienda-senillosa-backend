@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\OptionalMiddleware;
 
@@ -19,4 +20,8 @@ Route::prefix('products')->group(function () {
     Route::post('/{productId}/like', [ProductController::class, 'likeProduct'])->middleware(AuthMiddleware::class);
     Route::get('/{productId}/related', [ProductController::class, 'getRelatedProducts'])->middleware(OptionalMiddleware::class);
     Route::get('/{productId}', [ProductController::class, 'getSingleProduct'])->middleware(OptionalMiddleware::class);
+});
+
+Route::prefix('user')->group(function () {
+    Route::get('/likes', [UserController::class, 'getLikedProducts'])->middleware(AuthMiddleware::class);
 });
