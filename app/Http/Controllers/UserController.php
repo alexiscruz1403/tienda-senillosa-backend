@@ -18,7 +18,8 @@ class UserController extends Controller
     {
         try{
             $user = request()->user ?? null;
-            $products = $this->userService->getLikedProducts($user);
+            $page = request()->query('page', 1);
+            $products = $this->userService->getLikedProducts($user, $page);
             return ApiResponse::success($products, 'Productos favoritos obtenidos con éxito');
         }catch(\Exception $e){
             return ApiResponse::error("Error al obtener productos favoritos", 500, $e->getMessage());
