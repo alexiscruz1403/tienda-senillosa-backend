@@ -4,10 +4,11 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Product;
 use App\Http\Resources\PublicProductsResource;
+use App\Http\Resources\PublicProductsCollection;
 
 class UserService
 {
-    public function getLikedProducts($user){
+    public function getLikedProducts($user, $page = 1){
         $userModel = User::find($user->user_id);
 
         if(!$userModel) throw new \Exception("Usuario no encontrado");
@@ -16,8 +17,8 @@ class UserService
 
         $products = Product::with(['stocks', 'images'])
             ->whereIn('product_id', $likedProductIds)
-            ->get();
+            ->paginate(1, ['*'], 'page', $page);
 
-        return PublicProductsResource::collection($products);
+        return new PublicProductsCollection($products);
     }
 }
