@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CartController;
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\OptionalMiddleware;
 
@@ -24,4 +25,12 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('user')->group(function () {
     Route::get('/likes', [UserController::class, 'getLikedProducts'])->middleware(AuthMiddleware::class);
+});
+
+Route::prefix('cart')->group(function () {
+    Route::get('/', [CartController::class, 'getCart'])->middleware(AuthMiddleware::class);
+    Route::post('/add', [CartController::class, 'addToCart'])->middleware(AuthMiddleware::class);
+    Route::put('/update', [CartController::class, 'updateCartItem'])->middleware(AuthMiddleware::class);
+    Route::post('/remove', [CartController::class, 'removeFromCart'])->middleware(AuthMiddleware::class);
+    Route::post('/clear', [CartController::class, 'clearCart'])->middleware(AuthMiddleware::class);
 });
