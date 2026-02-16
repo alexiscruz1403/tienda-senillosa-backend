@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('postal_code', 20);
             $table->string('department', 100)->nullable();
             $table->text('additional_info')->nullable();
+            $table->boolean('active')->default(true);
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('restrict');
         });
     }
 

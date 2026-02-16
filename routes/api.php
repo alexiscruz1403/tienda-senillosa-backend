@@ -25,6 +25,11 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('user')->group(function () {
     Route::get('/likes', [UserController::class, 'getLikedProducts'])->middleware(AuthMiddleware::class);
+    Route::get('/info', [UserController::class,'getUserInfo'])->middleware(AuthMiddleware::class);
+    Route::put('/info', [UserController::class,'updateUserInfo'])->middleware(AuthMiddleware::class);
+    Route::get('/address', [UserController::class,'getUserAddress'])->middleware(AuthMiddleware::class);
+    Route::post('/address', [UserController::class,'updateUserAddress'])->middleware(AuthMiddleware::class);
+    Route::post('/change_password', [UserController::class,'updateUserPassword'])->middleware(AuthMiddleware::class);
 });
 
 Route::prefix('cart')->group(function () {
