@@ -26,7 +26,6 @@ class User extends Authenticatable implements JWTSubject
 
     protected $hidden = [
         'password',
-        'google_id',
         'role',
     ];
 
@@ -44,9 +43,9 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function address()
+    public function addresses()
     {
-        return $this->belongsTo(Address::class, 'address_id', 'address_id');
+        return $this->hasMany(Address::class, 'user_id','user_id');
     }
 
     public function likes()

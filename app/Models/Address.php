@@ -17,12 +17,13 @@ class Address extends Model
         'postal_code',
         'department',
         'additional_info',
+        'user_id',
+        'active',
     ];
 
     public $timestamps = false;
 
-    public function users()
-    {
-        return $this->hasMany(User::class, 'address_id', 'address_id');
+    public function user(){
+        return $this->belongsTo(User::class);
     }
 }

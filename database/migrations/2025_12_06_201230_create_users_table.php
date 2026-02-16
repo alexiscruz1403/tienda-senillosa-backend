@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('phone_number', 20)->nullable();
             $table->string('role', 50)->default('cliente');
             $table->string('google_id', 255)->nullable();
-            $table->unsignedBigInteger('address_id')->nullable();
-            $table->foreign('address_id')->references('address_id')->on('addresses')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });
