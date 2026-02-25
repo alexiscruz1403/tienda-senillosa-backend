@@ -18,6 +18,16 @@ class CartService
         return CartResource::collection($cart);
     }
 
+    public function getCartCount($userId){
+        $userModel = User::find($userId);
+
+        if(!$userModel) throw new \Exception("Usuario no encontrado");
+
+        $cart = Cart::where('user_id', $userId)->get();
+
+        return count($cart);
+    }
+
     public function addToCart($user, $productId, $size, $quantity){
         $userModel = User::find($user->user_id);
 
