@@ -83,7 +83,7 @@ class CartService
                     'product_quantity' => $quantity,
                 ]);
 
-        return true;
+        return $cartItem;
     }
 
     public function removeFromCart($user, $productId, $size){
