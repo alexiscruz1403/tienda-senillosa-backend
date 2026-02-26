@@ -2,6 +2,7 @@
 
 namespace App\Services;
 use App\Models\User;
+use App\Models\Cart;
 use App\Http\Validators\AuthValidator;
 use App\Utils\JWTUtil;
 use Laravel\Socialite\Facades\Socialite;
@@ -86,16 +87,35 @@ class AuthService
                     'username' => $googleUser->getName(),
                     'google_id' => $googleUser->getId(),
                     'password' => bcrypt(bin2hex(random_bytes(16))),
-                    'role' => 'cliente',
+                    'role' => 'Cliente',
                 ],
             );
         }
+
+        $cart = Cart::where('user_id', $user->user_id)->get();
+
+        $cartCount = count($cart);
 
         $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role, 'username' => $user->username]);
 
         return redirect(
             'http://localhost:5173' .
-            '/auth/google/callback?token=' . $token
+            '/auth/google/callback?token=' . $token . '&cartCount='. $cartCount
         );
+    }
+
+    public function validateToken($token)
+    {
+        return JWTUtil::validateToken($token);
+    }
+
+    public function refreshToken($token)
+    {
+        $payload = JWTUtil::validateToken($token);
+        if (!$payload) throw new \Exception('Token inválido.');
+
+        $newToken = JWTUtil::generateToken(['user_id' => $payload['user_id'], 'email' => $payload['email'], 'role' => $payload['role'], 'username' => $payload['username']]);
+
+        return $newToken;
     }
 }
