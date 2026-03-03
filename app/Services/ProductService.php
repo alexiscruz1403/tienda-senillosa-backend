@@ -5,9 +5,6 @@ use App\Models\Product;
 use App\Http\Resources\PublicProductsResource;
 use App\Http\Resources\PublicProductsCollection;
 use App\Models\Like;
-use App\Models\OrderProduct;
-use App\Models\User;
-
 class ProductService
 {
     public function getFeaturedProducts($user){

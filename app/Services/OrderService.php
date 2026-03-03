@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Services;
+use App\Models\Order;
+use App\Models\OrderProduct;
+use App\Models\OrderStatus;
+use App\Models\User;
+use App\Models\Address;
+use App\Models\Stock;
+use App\Models\Cart;
+use Illuminate\Support\Facades\DB;
+use App\Http\Resources\OrderResource;
+
+class OrderService{
+    public function createOrder($user, $products){
+        $userModel = User::find($user->user_id);
+
+        if(!$userModel) throw new \Exception("Usuario no encontrado");
+
+        $validPurchase = true;
+        $index = 0;
+        while($validPurchase && $index < count($products)){
+            $hasStock = $this->verifyStock($products[0]['product_id'], $products[0]['size'], $products[0]['quantity']);
+            if(!$hasStock) $validPurchase = false;
+
+            $index++;
+        }
+
+        if(!$validPurchase) throw new \Exception("No hay stock suficiente para realizar la compra");
+
+        $address = Address::where('user_id', $user->user_id)->where('active', true)->first();
+
+        if(!$address) throw new \Exception("El usuario no tiene una dirección asignada");
+
+        DB::transaction(function() use ($user, $products, $address){
+            $order = Order::create([
+                'user_id' => $user->user_id,
+                'address_id' => $address->address_id
+            ]);
+
+            foreach($products as $product){
+                OrderProduct::create([
+                    'order_id' => $order->order_id,
+                    'product_id' => $product['product_id'],
+                    'product_size' => $product['size'],
+                    'product_quantity' => $product['quantity'],
+                    'product_price' => $product['price']
+                ]);
+                $this->updateStock($product['product_id'], $product['size'], $product['quantity']);
+            }
+
+            OrderStatus::create([
+                'order_id' => $order->order_id,
+                'status_id' => 1
+            ]);
+
+            $this->clearCart($user->user_id);
+        });
+    }
+
+    public function getOrders($user){
+        $userModel = User::find($user->user_id);
+
+        if(!$userModel) throw new \Exception("Usuario no encontrado");
+
+        $orders = Order::where('user_id', $user->user_id)->with(['orderProducts.product.images', 'orderStatuses.status'])->get();
+
+        return OrderResource::collection($orders);
+    }
+
+    public function getOrder($user, $orderId){
+        $userModel = User::find($user->user_id);
+
+        if(!$userModel) throw new \Exception("Usuario no encontrado");
+
+        $order = Order::with(['orderProducts.product.images', 'orderStatuses.status'])->find($orderId);
+
+        if(!$order) throw new \Exception("Compra no encontrada");
+
+        if($order && $order->user_id != $userModel->user_id) throw new \Exception("Esta compra no pertenece al usuario actual");
+
+        return new OrderResource($order);
+    }
+
+    private function verifyStock($productId, $productSize, $productQuantity){
+        $stock = Stock::where('product_id', $productId)->where('size', $productSize)->first();
+
+        if(!$stock) return false;
+
+        if($stock && $stock->stock_quantity < $productQuantity) return false;
+
+        return true;
+    }
+
+    private function updateStock($productId, $productSize, $productQuantity){
+        $stock = Stock::where('product_id', $productId)->where('size', $productSize)->first();
+
+        $newStock = $stock->stock_quantity - $productQuantity;
+        $stock->stock_quantity = $newStock;
+        $stock->save();
+    }
+
+    private function clearCart($userId){
+        $userModel = User::find($userId);
+
+        if(!$userModel) throw new \Exception("Usuario no encontrado");
+
+        Cart::where('user_id', $userModel->user_id)->delete();
+    }
+}

@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\Image;
+use App\Models\Status;
 
 class DatabaseSeeder extends Seeder
 {
@@ -104,6 +105,50 @@ class DatabaseSeeder extends Seeder
             'product_id' => 2,
             'image_url' => 'https://i.ibb.co/0pCDSmnK/blue-jeans-bgless-back.png',
             'is_main' => false,
+        ]);
+
+        Image::create([
+            'product_id' => 3,
+            'image_url' => 'https://placehold.co/400',
+            'is_main' => true,
+        ]);
+
+        Image::create([
+            'product_id' => 4,
+            'image_url' => 'https://placehold.co/400',
+            'is_main' => true,
+        ]);
+
+
+        //Statuses
+        Status::create([
+            'name' => 'Enviada',
+            'description' => 'Estado de compra enviada, utilizada cuando el usuario realiza exitosamente el pago de una compra online'
+        ]);
+
+        Status::create([
+            'name' => 'Aceptada',
+            'description' => 'Estado de compra aceptada, utilizada cuando el despachador confirma el stock necesario para realizar el pedido'
+        ]);
+
+        Status::create([
+            'name' => 'En camino',
+            'description' => 'Estado de compra en camino, utilizada cuando el despachador confirma el envío de la compra a través del correo nacional'
+        ]);
+
+        Status::create([
+            'name' => 'Recibida',
+            'description' => 'Estado de compra recibida, utilizada cuando el usuario final recibe su compra en casa'
+        ]);
+
+        Status::create([
+            'name' => 'Cancelada',
+            'description' => 'Estado de compra cancelada, utilizada cuando el usuario final cancela su compra en el tiempo permitido. Debe realizarse el reembolso completo dentro las próximas 48 horas'
+        ]);
+
+        Status::create([
+            'name' => 'Rechazada',
+            'description' => 'Estado de compra rechazada, utilizada cuando el despachador rechaza una compra por stock insuficiente. Debe realizarse el reembolso completo dentro las próximas 48 horas'
         ]);
     }
 }
