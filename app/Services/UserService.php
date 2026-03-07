@@ -27,7 +27,7 @@ class UserService
     public function getLikedProducts($user, $page = 1){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $likedProductIds = $userModel->likes()->pluck('product_id')->toArray();
 
@@ -41,7 +41,7 @@ class UserService
     public function getUserInfo($user){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         return new UserResource($userModel);
     }
@@ -49,7 +49,7 @@ class UserService
     public function updateUserInfo($user, $newInfo){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $this->userValidator->validate($newInfo);
 
@@ -65,7 +65,7 @@ class UserService
     public function getUserAddress($user){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $address = $userModel->addresses()->where("active", true)->first();
 
@@ -75,7 +75,7 @@ class UserService
     public function updateUserAddress($user, $newInfo){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $this->addressValidator->validate($newInfo);
 
@@ -113,12 +113,12 @@ class UserService
     public function updateUserPassword($user, $newInfo){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $this->passwordValidator->validate($newInfo);
 
         if(!password_verify($newInfo["current_password"], $userModel->password)){
-            throw new \Exception("La contraseña actual no coincide con la contraseña enviada");
+            throw new \Exception("La contraseña actual no coincide con la contraseña enviada", 401);
         }
 
         $user->password = bcrypt($newInfo['new_password']);

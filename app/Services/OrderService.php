@@ -15,7 +15,7 @@ class OrderService{
     public function createOrder($user, $products){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $validPurchase = true;
         $index = 0;
@@ -26,13 +26,13 @@ class OrderService{
             $index++;
         }
 
-        if(!$validPurchase) throw new \Exception("No hay stock suficiente para realizar la compra");
+        if(!$validPurchase) throw new \Exception("No hay stock suficiente para realizar la compra", 409);
 
         $address = Address::where('user_id', $user->user_id)->where('active', true)->first();
 
-        if(!$address) throw new \Exception("El usuario no tiene una dirección asignada");
+        if(!$address) throw new \Exception("El usuario no tiene una dirección asignada", 409);
 
-        DB::transaction(function() use ($user, $products, $address){
+        $order = DB::transaction(function() use ($user, $products, $address){
             $order = Order::create([
                 'user_id' => $user->user_id,
                 'address_id' => $address->address_id
@@ -55,13 +55,17 @@ class OrderService{
             ]);
 
             $this->clearCart($user->user_id);
+
+            return $order;
         });
+
+        return new OrderResource($order);
     }
 
     public function getOrders($user){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $orders = Order::where('user_id', $user->user_id)->with(['orderProducts.product.images', 'orderStatuses.status'])->get();
 
@@ -71,13 +75,13 @@ class OrderService{
     public function getOrder($user, $orderId){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         $order = Order::with(['orderProducts.product.images', 'orderStatuses.status'])->find($orderId);
 
-        if(!$order) throw new \Exception("Compra no encontrada");
+        if(!$order) throw new \Exception("Compra no encontrada", 404);
 
-        if($order && $order->user_id != $userModel->user_id) throw new \Exception("Esta compra no pertenece al usuario actual");
+        if($order && $order->user_id != $userModel->user_id) throw new \Exception("Esta compra pertenece a otro usuario", 403);
 
         return new OrderResource($order);
     }
@@ -103,7 +107,7 @@ class OrderService{
     private function clearCart($userId){
         $userModel = User::find($userId);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
 
         Cart::where('user_id', $userModel->user_id)->delete();
     }

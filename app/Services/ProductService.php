@@ -17,9 +17,8 @@ class ProductService
     public function likeProduct($user, $productId){
         $product = Product::findOrFail($productId);
 
-        if(!$product){
-            throw new \Exception("Producto no encontrado");
-        }
+        if(!$product) throw new \Exception("Producto no encontrado", 404);
+
 
         $likes = $user->likes();
         if($likes->where('product_id', $productId)->exists()){

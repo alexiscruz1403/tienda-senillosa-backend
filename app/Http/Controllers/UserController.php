@@ -22,9 +22,9 @@ class UserController extends Controller
             $user = request()->user ?? null;
             $page = request()->query('page', 1);
             $products = $this->userService->getLikedProducts($user, $page);
-            return ApiResponse::success($products, 'Productos favoritos obtenidos con éxito');
+            return ApiResponse::success($products, 'Productos favoritos obtenidos con exitosamente');
         }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener productos favoritos", 500, $e->getMessage());
+            return ApiResponse::error("Ocurrió un error al obtener productos favoritos", $e->getCode(), $e->getMessage());
         }
     }
 
@@ -36,7 +36,7 @@ class UserController extends Controller
 
             return ApiResponse::success($userModel,"Información del usuario obtenida exitosamente");
         }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener la información del usuario",500, $e->getMessage());
+            return ApiResponse::error("Ocurrió un error al obtener la información del usuario",$e->getCode(), $e->getMessage());
         }
     }
 
@@ -53,9 +53,9 @@ class UserController extends Controller
             $updatedUser = $this->userService->updateUserInfo($user, $newInfo);
             $token = JWTUtil::generateToken(['user_id' => $updatedUser->user_id, 'email' => $updatedUser->email, 'role' => $updatedUser->role, 'username' => $updatedUser->username]);
 
-            return ApiResponse::success(["token" => $token, "data" => $updatedUser],"Información del usuario actualizada correctamente");
+            return ApiResponse::success(["token" => $token, "data" => $updatedUser],"Información del usuario actualizada exitosamente");
         }catch(\Exception $e){
-            return ApiResponse::error("Error al actualizar información del usuario",500, $e->getMessage());
+            return ApiResponse::error("Ocurrió un error al actualizar información del usuario",$e->getCode(), $e->getMessage());
         }
     }
 
@@ -66,7 +66,7 @@ class UserController extends Controller
             $address = $this->userService->getUserAddress($user);
             return ApiResponse::success($address,"Dirección obtenida exitosamente");
         }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener la dirección del usuario",500, $e->getMessage());
+            return ApiResponse::error("Ocurrió un error al obtener la dirección del usuario",$e->getCode(), $e->getMessage());
         }
     }
 
@@ -83,9 +83,9 @@ class UserController extends Controller
             ];
 
             $updatedAddress = $this->userService->updateUserAddress($user, $newAddress);
-            return ApiResponse::success($updatedAddress,"Dirección del usuario actualizada correctamente");
+            return ApiResponse::success($updatedAddress,"Dirección del usuario actualizada exitosamente");
         }catch(\Exception $e){
-            return ApiResponse::error("Error al actualizar la dirección del usuario",500, $e->getMessage());
+            return ApiResponse::error("Ocurrión un error al actualizar la dirección del usuario",$e->getCode(), $e->getMessage());
         }
     }
 
@@ -99,8 +99,9 @@ class UserController extends Controller
             ];
 
             $this->userService->updateUserPassword($user, $newPassword);
+            return ApiResponse::success(null,"Contraseña actualizada exitosamente");
         }catch(\Exception $e){
-            return ApiResponse::error("Error al cambiar la contraseña",500, $e->getMessage());
+            return ApiResponse::error("Ocurrió un error al cambiar la contraseña",$e->getCode(), $e->getMessage());
         }
     }
 }

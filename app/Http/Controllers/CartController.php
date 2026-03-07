@@ -20,9 +20,9 @@ class CartController extends Controller
         try {
             $user = $request->user;
             $cart = $this->cartService->getCart($user);
-            return ApiResponse::success($cart, 200);
+            return ApiResponse::success($cart, 'Carrito obtenido exitosamente');
         } catch (\Exception $e) {
-            return ApiResponse::error(['error' => $e->getMessage()], 404);
+            return ApiResponse::error('Ocurrió un error al obtener el carrito', $e->getCode(), $e->getMessage());
         }
     }
 
@@ -35,9 +35,9 @@ class CartController extends Controller
             $quantity = $request->input('quantity');
 
             $cartItem = $this->cartService->addToCart($user, $productId, $size, $quantity);
-            return ApiResponse::success($cartItem, 'Producto agregado al carrito', 201);
+            return ApiResponse::success($cartItem, 'Producto agregado al carrito exitosamente', 201);
         } catch (\Exception $e) {
-            return ApiResponse::error(['error' => $e->getMessage()], 400);
+            return ApiResponse::error('Ocurrió un error al añadir el producto al carrito', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -50,9 +50,9 @@ class CartController extends Controller
             $quantity = $request->input('quantity');
 
             $cartItem = $this->cartService->updateCartItem($user, $productId, $size, $quantity);
-            return ApiResponse::success($cartItem, 'Cantidad del producto en el carrito actualizada', 200);
+            return ApiResponse::success($cartItem, 'Cantidad del producto en el carrito actualizada exitosamente', 200);
         } catch (\Exception $e) {
-            return ApiResponse::error(['error' => $e->getMessage()], 400);
+            return ApiResponse::error('Ocurrió un error al actualizar la cantidad en el carrrito', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -64,9 +64,9 @@ class CartController extends Controller
             $size = $request->input('size');
 
             $this->cartService->removeFromCart($user, $productId, $size);
-            return ApiResponse::success(null, 'Producto eliminado del carrito', 200);
+            return ApiResponse::success(null, 'Producto eliminado del carrito exitosamente', 200);
         } catch (\Exception $e) {
-            return ApiResponse::error(['error' => $e->getMessage()], 400);
+            return ApiResponse::error('Ocurrió un error al eliminar el producto del carrito', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -76,9 +76,9 @@ class CartController extends Controller
             $user = $request->user;
 
             $this->cartService->clearCart($user);
-            return ApiResponse::success(null, 'Carrito vaciado correctamente', 200);
+            return ApiResponse::success(null, 'Carrito vaciado exitosamente', 200);
         } catch (\Exception $e) {
-            return ApiResponse::error(['error' => $e->getMessage()], 400);
+            return ApiResponse::error('Ocurrió un error al vaciar el carrito', $e->getCode(), [$e->getMessage()]);
         }
     }
 }

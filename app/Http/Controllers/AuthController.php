@@ -23,9 +23,9 @@ class AuthController extends Controller
         try{
             $userData = $request->all();
             $token = $this->authService->register($userData);
-            return ApiResponse::success(['token' => $token], 'Usuario registrado exitosamente', 201);
+            return ApiResponse::success(['token' => $token], 'Registro completado exitosamente', 201);
         }catch(\Exception $e){
-            return ApiResponse::error('Error al registrar el usuario', 500, [$e->getMessage()]);
+            return ApiResponse::error('Ocurrió un error al registrar', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -35,9 +35,9 @@ class AuthController extends Controller
             $credentials = $request->all();
             $token = $this->authService->login($credentials);
             $cartCount = $this->cartService->getCartCount($token['user_id']);
-            return ApiResponse::success(['token' => $token, 'cartCount' => $cartCount], 'Inicio de sesión exitoso', 200);
+            return ApiResponse::success(['token' => $token], 'Inicio de sesión compleato exitosamente', 200);
         }catch(\Exception $e){
-            return ApiResponse::error('Error al iniciar sesión', 500, [$e->getMessage()]);
+            return ApiResponse::error('Ocurrió un error al iniciar sesión', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -75,7 +75,7 @@ class AuthController extends Controller
             $newToken = $this->authService->refreshToken($token);
             return ApiResponse::success(['token' => $newToken], 'Token refrescado exitosamente', 200);
         }catch(\Exception $e){
-            return ApiResponse::error('Error al refrescar el token', 500, [$e->getMessage()]);
+            return ApiResponse::error('Ocurrió un error al regenerar el token', 500, [$e->getMessage()]);
         }
     }
 }

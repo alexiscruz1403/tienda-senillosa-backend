@@ -18,10 +18,10 @@ class OrderController extends Controller
         try{
             $user = request()->user;
             $products = request()->get('products', []);
-            $this->orderService->createOrder($user, $products);
-            return ApiResponse::success(null, 'Compra realizada exitosamente');
+            $order = $this->orderService->createOrder($user, $products);
+            return ApiResponse::success($order, 'Compra completada exitosamente');
         }catch(\Exception $e){
-            return ApiResponse::error('Error al completar la compra', 500, [$e->getMessage()]);
+            return ApiResponse::error('Ocurrió un error al completar la compra', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -32,7 +32,7 @@ class OrderController extends Controller
             $orders = $this->orderService->getOrders($user);
             return ApiResponse::success($orders, 'Compras obtenidas exitosamente');
         }catch(\Exception $e){
-            return ApiResponse::error('Error al obtener las compras', 500, [$e->getMessage()]);
+            return ApiResponse::error('Ocurrió un error al obtener las compras', $e->getCode(), [$e->getMessage()]);
         }
     }
 
@@ -44,7 +44,7 @@ class OrderController extends Controller
             $order = $this->orderService->getOrder($user, $orderId);
             return ApiResponse::success($order, 'Compra obtenida exitosamente');
         }catch(\Exception $e){
-            return ApiResponse::error('Error al obtener las compras', 500, [$e->getMessage()]);
+            return ApiResponse::error('Ocurrió un error al obtener la compra', $e->getCode(), [$e->getMessage()]);
         }
     }
 }
