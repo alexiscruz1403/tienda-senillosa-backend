@@ -5,13 +5,14 @@ use App\Models\User;
 use App\Models\Cart;
 use App\Models\Stock;
 use App\Http\Resources\CartResource;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class CartService
 {
     public function getCart($user){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $cart = Cart::where('user_id', $userModel->user_id)->with(['stock', 'product'])->get();
 
@@ -21,7 +22,7 @@ class CartService
     public function getCartCount($userId){
         $userModel = User::find($userId);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $cart = Cart::where('user_id', $userId)->get();
 
@@ -31,13 +32,13 @@ class CartService
     public function addToCart($user, $productId, $size, $quantity){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $stock = Stock::where('product_id', $productId)
                         ->where('size', $size)
                         ->first();
 
-        if(!$stock) throw new \Exception("Stock no encontrado para el producto y talla especificados", 404);
+        if(!$stock) throw new UnauthorizedHttpException("Stock no encontrado para el producto y talla especificados", 404);
 
         $cartItem = Cart::where('user_id', $userModel->user_id)
                         ->where('stock_id', $stock->stock_id)
@@ -63,19 +64,19 @@ class CartService
     public function updateCartItem($user, $productId, $size, $quantity){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $stock = Stock::where('product_id', $productId)
                         ->where('size', $size)
                         ->first();
 
-        if(!$stock) throw new \Exception("Stock no encontrado para el producto y talla especificados", 404);
+        if(!$stock) throw new UnauthorizedHttpException("Stock no encontrado para el producto y talla especificados", 404);
 
         $cartItem = Cart::where('user_id', $userModel->user_id)
                         ->where('stock_id', $stock->stock_id)
                         ->first();
 
-        if(!$cartItem) throw new \Exception("El producto no existe en el carrito", 404);
+        if(!$cartItem) throw new UnauthorizedHttpException("El producto no existe en el carrito", 404);
 
         Cart::where('user_id', $userModel->user_id)
                 ->where('stock_id', $stock->stock_id)
@@ -89,13 +90,13 @@ class CartService
     public function removeFromCart($user, $productId, $size){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $stock = Stock::where('product_id', $productId)
                         ->where('size', $size)
                         ->first();
 
-        if(!$stock) throw new \Exception("Stock no encontrado para el producto y talla especificados", 404);
+        if(!$stock) throw new UnauthorizedHttpException("Stock no encontrado para el producto y talla especificados", 404);
 
         Cart::where('user_id', $userModel->user_id)
                 ->where('stock_id', $stock->stock_id)
@@ -107,7 +108,7 @@ class CartService
     public function clearCart($user){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         Cart::where('user_id', $userModel->user_id)->delete();
 

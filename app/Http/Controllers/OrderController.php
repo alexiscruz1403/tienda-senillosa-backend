@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Services\OrderService;
 use App\Http\Responses\ApiResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrderController extends Controller
 {
@@ -20,8 +21,8 @@ class OrderController extends Controller
             $products = request()->get('products', []);
             $order = $this->orderService->createOrder($user, $products);
             return ApiResponse::success($order, 'Compra completada exitosamente');
-        }catch(\Exception $e){
-            return ApiResponse::error('Ocurrió un error al completar la compra', $e->getCode(), [$e->getMessage()]);
+        }catch(HttpException $e){
+            return ApiResponse::error('Ocurrió un error al completar la compra', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -31,8 +32,8 @@ class OrderController extends Controller
             $user = request()->user;
             $orders = $this->orderService->getOrders($user);
             return ApiResponse::success($orders, 'Compras obtenidas exitosamente');
-        }catch(\Exception $e){
-            return ApiResponse::error('Ocurrió un error al obtener las compras', $e->getCode(), [$e->getMessage()]);
+        }catch(HttpException $e){
+            return ApiResponse::error('Ocurrió un error al obtener las compras', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -43,8 +44,8 @@ class OrderController extends Controller
             $orderId =
             $order = $this->orderService->getOrder($user, $orderId);
             return ApiResponse::success($order, 'Compra obtenida exitosamente');
-        }catch(\Exception $e){
-            return ApiResponse::error('Ocurrió un error al obtener la compra', $e->getCode(), [$e->getMessage()]);
+        }catch(HttpException $e){
+            return ApiResponse::error('Ocurrió un error al obtener la compra', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 }

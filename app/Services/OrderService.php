@@ -10,12 +10,17 @@ use App\Models\Stock;
 use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\OrderResource;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Illuminate\Support\Facades\Cache;
 
 class OrderService{
     public function createOrder($user, $products){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $validPurchase = true;
         $index = 0;
@@ -26,11 +31,11 @@ class OrderService{
             $index++;
         }
 
-        if(!$validPurchase) throw new \Exception("No hay stock suficiente para realizar la compra", 409);
+        if(!$validPurchase) throw new ConflictHttpException("No hay stock suficiente para realizar la compra");
 
         $address = Address::where('user_id', $user->user_id)->where('active', true)->first();
 
-        if(!$address) throw new \Exception("El usuario no tiene una dirección asignada", 409);
+        if(!$address) throw new ConflictHttpException("El usuario no tiene una dirección asignada");
 
         $order = DB::transaction(function() use ($user, $products, $address){
             $order = Order::create([
@@ -56,6 +61,8 @@ class OrderService{
 
             $this->clearCart($user->user_id);
 
+            Cache::forget("orders.user.{$user->user_id}");
+
             return $order;
         });
 
@@ -65,23 +72,28 @@ class OrderService{
     public function getOrders($user){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
-        $orders = Order::where('user_id', $user->user_id)->with(['orderProducts.product.images', 'orderStatuses.status'])->get();
+        $orders = Cache::remember("orders.user.{$user->user_id}", now()->addMinutes(5), function () use($user) {
+            return Order::where('user_id', $user->user_id)->with(['orderProducts.product.images', 'orderStatuses.status'])->get();
 
+        });
         return OrderResource::collection($orders);
     }
 
     public function getOrder($user, $orderId){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
-        $order = Order::with(['orderProducts.product.images', 'orderStatuses.status'])->find($orderId);
+        $order = Cache::remember("order.{$orderId}", 600, function () use($orderId) {
+            return Order::with(['orderProducts.product.images', 'orderStatuses.status'])->find($orderId);
 
-        if(!$order) throw new \Exception("Compra no encontrada", 404);
+        });
 
-        if($order && $order->user_id != $userModel->user_id) throw new \Exception("Esta compra pertenece a otro usuario", 403);
+        if(!$order) throw new NotFoundHttpException("Compra no encontrada");
+
+        if($order && $order->user_id != $userModel->user_id) throw new AccessDeniedHttpException("Esta compra pertenece a otro usuario");
 
         return new OrderResource($order);
     }
@@ -107,7 +119,7 @@ class OrderService{
     private function clearCart($userId){
         $userModel = User::find($userId);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado", 401);
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         Cart::where('user_id', $userModel->user_id)->delete();
     }
