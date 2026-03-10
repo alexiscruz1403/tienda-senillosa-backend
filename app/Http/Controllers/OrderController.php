@@ -30,7 +30,8 @@ class OrderController extends Controller
     {
         try{
             $user = request()->user;
-            $orders = $this->orderService->getOrders($user);
+            $page = request()->query('page', 1);
+            $orders = $this->orderService->getOrders($user, $page);
             return ApiResponse::success($orders, 'Compras obtenidas exitosamente');
         }catch(HttpException $e){
             return ApiResponse::error('Ocurrió un error al obtener las compras', $e->getStatusCode(), [$e->getMessage()]);

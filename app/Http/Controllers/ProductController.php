@@ -19,7 +19,7 @@ class ProductController extends Controller
     {
         try{
             $user = request()->user ?? null;
-            $products = $this->productService->getFeaturedProducts($user);
+            $products = $this->productService->getFeaturedProducts();
             return ApiResponse::success($products, 'Productos destacados obtenidos exitosamente');
         }catch(HttpException $e){
             return ApiResponse::error("Ocurrió un error al obtener productos destacados", $e->getStatusCode(), [$e->getMessage()]);

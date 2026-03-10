@@ -10,6 +10,7 @@ use App\Models\Stock;
 use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\OrderCollection;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -69,16 +70,18 @@ class OrderService{
         return new OrderResource($order);
     }
 
-    public function getOrders($user){
+    public function getOrders($user, $page){
         $userModel = User::find($user->user_id);
 
         if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
-        $orders = Cache::remember("orders.user.{$user->user_id}", now()->addMinutes(5), function () use($user) {
-            return Order::where('user_id', $user->user_id)->with(['orderProducts.product.images', 'orderStatuses.status'])->get();
+        $orders = Cache::remember("orders.user.{$user->user_id}.page.{$page}", now()->addMinutes(5), function () use($user, $page) {
+            return Order::where('user_id', $user->user_id)
+                    ->with(['orderProducts.product.images', 'orderStatuses.status'])
+                    ->paginate(1, ['*'], 'page', $page);
 
         });
-        return OrderResource::collection($orders);
+        return new OrderCollection($orders);
     }
 
     public function getOrder($user, $orderId){
