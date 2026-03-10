@@ -2,10 +2,10 @@
 
 namespace App\Services;
 use App\Models\User;
-use App\Models\Cart;
 use App\Http\Validators\AuthValidator;
 use App\Utils\JWTUtil;
 use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class AuthService
 {
@@ -24,7 +24,7 @@ class AuthService
         // Search for existing user
         $existingUser = User::where('email', $userData['email'])->first();
 
-        if ($existingUser) throw new \Exception('El correo electrónico ya está en uso.');
+        if ($existingUser) throw new UnauthorizedHttpException('El correo electrónico ya está en uso');
 
         // Create new user
         $user = new User();
@@ -51,7 +51,7 @@ class AuthService
         $user = User::where('email', $credentials['email'])->first();
 
         if (!$user || !password_verify($credentials['password'], $user->password)) {
-            throw new \Exception('Correo electrónico o contraseña incorrectos.');
+            throw new UnauthorizedHttpException('Correo electrónico o contraseña incorrectos');
         }
 
         // Generate JWT token
@@ -92,15 +92,11 @@ class AuthService
             );
         }
 
-        $cart = Cart::where('user_id', $user->user_id)->get();
-
-        $cartCount = count($cart);
-
         $token = JWTUtil::generateToken(['user_id' => $user->user_id, 'email' => $user->email, 'role' => $user->role, 'username' => $user->username]);
 
         return redirect(
             'http://localhost:5173' .
-            '/auth/google/callback?token=' . $token . '&cartCount='. $cartCount
+            '/auth/google/callback?token=' . $token
         );
     }
 
@@ -112,7 +108,7 @@ class AuthService
     public function refreshToken($token)
     {
         $payload = JWTUtil::validateToken($token);
-        if (!$payload) throw new \Exception('Token inválido.');
+        if (!$payload) throw new UnauthorizedHttpException('Token inválido');
 
         $newToken = JWTUtil::generateToken(['user_id' => $payload['user_id'], 'email' => $payload['email'], 'role' => $payload['role'], 'username' => $payload['username']]);
 

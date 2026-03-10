@@ -50,7 +50,7 @@ class Product extends Model
         return $this->hasMany(Image::class, 'product_id', 'product_id');
     }
 
-    public function orderProducts()
+    /*public function orderProducts()
     {
         return $this->hasManyThrough(
             OrderProduct::class,  // Modelo final
@@ -60,5 +60,8 @@ class Product extends Model
             'product_id',         // Local key en products
             'stock_id'            // Local key en stocks (intermedio)
         );
+    }*/
+    public function orderProducts(){
+        return $this->hasMany(OrderProduct::class, 'product_id', 'product_id');
     }
 }

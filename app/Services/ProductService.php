@@ -5,14 +5,16 @@ use App\Models\Product;
 use App\Http\Resources\PublicProductsResource;
 use App\Http\Resources\PublicProductsCollection;
 use App\Models\Like;
-use App\Models\OrderProduct;
-use App\Models\User;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Support\Facades\Cache;
 
 class ProductService
 {
-    public function getFeaturedProducts($user){
-        $products = Product::with(['stocks', 'images'])
+    public function getFeaturedProducts(){
+        $products = Cache::remember('products.featured', now()->addHour(), function () {
+            return Product::with(['stocks', 'images'])
             ->get();
+        });
 
         return PublicProductsResource::collection($products);
     }
@@ -20,9 +22,8 @@ class ProductService
     public function likeProduct($user, $productId){
         $product = Product::findOrFail($productId);
 
-        if(!$product){
-            throw new \Exception("Producto no encontrado");
-        }
+        if(!$product) throw new NotFoundHttpException("Producto no encontrado");
+
 
         $likes = $user->likes();
         if($likes->where('product_id', $productId)->exists()){
@@ -40,7 +41,9 @@ class ProductService
     }
 
     public function getSingleProduct($productId){
-        $product = Product::with(['stocks', 'images'])->findOrFail($productId);
+        $product = Cache::remember("product.{$productId}", now()->addMinutes(10), function () use($productId) {
+            return Product::with(['stocks', 'images'])->findOrFail($productId);
+        });
 
         return new PublicProductsResource($product);
     }
@@ -48,9 +51,7 @@ class ProductService
     public function getRelatedProducts($productId){
         $product = Product::findOrFail($productId);
 
-        if(!$product){
-            throw new \Exception("Producto no encontrado");
-        }
+        if(!$product) throw new NotFoundHttpException("Producto no encontrado");
 
         /**$relatedProducts = Product::with(['stocks', 'images'])
             ->where('category_id', $product->category_id)
@@ -58,14 +59,18 @@ class ProductService
             ->get();
         **/
 
-        $relatedProducts = Product::with(['stocks', 'images'])
+        $relatedProducts = Cache::remember("products.related.{$productId}", now()->addDay(), function () {
+            return Product::with(['stocks', 'images'])
             ->get();
+        });
 
         return PublicProductsResource::collection($relatedProducts);
     }
 
     public function getManyProducts($search = null, $categories = null, $gender = null, $page = 1, $ordering = null){
-        $products = Product::with(['stocks', 'images'])
+        $key = $this->buildProductsCacheKey($search, $categories, $gender, $page, $ordering);
+        $products = Cache::remember($key, now()->addHour(), function () use($search, $categories, $gender, $page, $ordering) {
+            return  Product::with(['stocks', 'images'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'LIKE', "%{$search}%")
@@ -99,7 +104,30 @@ class ProductService
                 }
             })
             ->paginate(1, ['*'], 'page', $page);
+        });
 
         return new PublicProductsCollection($products);
     }
+
+    private function buildProductsCacheKey($search = null, $categories = null, $gender = null, $page = 1, $ordering = null){
+        $key = "products";
+
+        if($search) $key .= ".search.{$search}";
+
+        if(isset($categories) && count($categories) > 0){
+            foreach($categories as $category){
+                $key .= ".category.{$category}";
+            }
+        }
+
+        if($gender) $key .= ".gender.{$gender}";
+
+        if($page) $key .= ".page.{$page}";
+
+        if($ordering) $key .= ".ordering.{$ordering}";
+
+        return $key;
+    }
 }
+
+

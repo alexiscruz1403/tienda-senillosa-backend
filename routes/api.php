@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\OptionalMiddleware;
 
@@ -25,8 +27,11 @@ Route::prefix('products')->group(function () {
     Route::get('/{productId}', [ProductController::class, 'getSingleProduct'])->middleware(OptionalMiddleware::class);
 });
 
+Route::prefix('likes')->group(function () {
+    Route::get('/', [LikeController::class, 'getLikedProducts'])->middleware(AuthMiddleware::class);
+});
+
 Route::prefix('user')->group(function () {
-    Route::get('/likes', [UserController::class, 'getLikedProducts'])->middleware(AuthMiddleware::class);
     Route::get('/info', [UserController::class,'getUserInfo'])->middleware(AuthMiddleware::class);
     Route::put('/info', [UserController::class,'updateUserInfo'])->middleware(AuthMiddleware::class);
     Route::get('/address', [UserController::class,'getUserAddress'])->middleware(AuthMiddleware::class);
@@ -40,4 +45,10 @@ Route::prefix('cart')->group(function () {
     Route::put('/update', [CartController::class, 'updateCartItem'])->middleware(AuthMiddleware::class);
     Route::post('/remove', [CartController::class, 'removeFromCart'])->middleware(AuthMiddleware::class);
     Route::post('/clear', [CartController::class, 'clearCart'])->middleware(AuthMiddleware::class);
+});
+
+Route::prefix('orders')->group(function(){
+    Route::get('/', [OrderController::class, 'getOrders'])->middleware(AuthMiddleware::class);
+    Route::get('/{orderId}', [OrderController::class, 'getOrder'])->middleware(AuthMiddleware::class);
+    Route::post('/', [OrderController::class, 'createOrder'])->middleware(AuthMiddleware::class);
 });

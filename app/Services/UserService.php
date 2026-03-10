@@ -2,14 +2,14 @@
 
 namespace App\Services;
 use App\Models\User;
-use App\Models\Product;
 use App\Models\Address;
-use App\Http\Resources\PublicProductsCollection;
 use App\Http\Validators\UserValidator;
 use App\Http\Validators\AddressValidator;
 use App\Http\Validators\PasswordValidator;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\AddressResource;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Illuminate\Support\Facades\Cache;
 
 class UserService
 {
@@ -24,24 +24,12 @@ class UserService
         $this->passwordValidator = $passwordValidator;
     }
 
-    public function getLikedProducts($user, $page = 1){
-        $userModel = User::find($user->user_id);
-
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
-
-        $likedProductIds = $userModel->likes()->pluck('product_id')->toArray();
-
-        $products = Product::with(['stocks', 'images'])
-            ->whereIn('product_id', $likedProductIds)
-            ->paginate(1, ['*'], 'page', $page);
-
-        return new PublicProductsCollection($products);
-    }
-
     public function getUserInfo($user){
-        $userModel = User::find($user->user_id);
+        $userModel = Cache::remember("info.user.{$user->user_id}", now()->addHour(), function () use($user) {
+            return User::find($user->user_id);
+        });
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         return new UserResource($userModel);
     }
@@ -49,7 +37,7 @@ class UserService
     public function updateUserInfo($user, $newInfo){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $this->userValidator->validate($newInfo);
 
@@ -59,13 +47,17 @@ class UserService
             "phone_number" => $newInfo["phone_number"],
         ]);
 
+        Cache::forget("info.user.{$user->user_id}");
+
         return new UserResource($userModel);
     }
 
     public function getUserAddress($user){
-        $userModel = User::find($user->user_id);
+        $userModel = Cache::remember("address.user.{$user->user_id}", now()->addHour(), function () use($user) {
+            return User::find($user->user_id);
+        });
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $address = $userModel->addresses()->where("active", true)->first();
 
@@ -75,7 +67,7 @@ class UserService
     public function updateUserAddress($user, $newInfo){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $this->addressValidator->validate($newInfo);
 
@@ -107,18 +99,20 @@ class UserService
             $updatedAddress = $user->addresses()->create($newInfo);
         }
 
+        Cache::forget("address.user.{$user->user_id}");
+
         return new AddressResource($updatedAddress);
     }
 
     public function updateUserPassword($user, $newInfo){
         $userModel = User::find($user->user_id);
 
-        if(!$userModel) throw new \Exception("Usuario no encontrado");
+        if(!$userModel) throw new UnauthorizedHttpException("Usuario no encontrado");
 
         $this->passwordValidator->validate($newInfo);
 
         if(!password_verify($newInfo["current_password"], $userModel->password)){
-            throw new \Exception("La contraseña actual no coincide con la contraseña enviada");
+            throw new UnauthorizedHttpException("La contraseña actual no coincide con la contraseña enviada");
         }
 
         $user->password = bcrypt($newInfo['new_password']);

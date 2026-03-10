@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class StockResource extends JsonResource
+class OrderStatusResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,7 +15,8 @@ class StockResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'size' => $this->size
+            'order_id' => $this->order_id,
+            'status' => new StatusResource($this->whenLoaded('status'))
         ];
     }
 }

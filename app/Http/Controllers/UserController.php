@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Responses\ApiResponse;
 use App\Services\UserService;
 use App\Utils\JWTUtil;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserController extends Controller
 {
@@ -16,18 +16,6 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function getLikedProducts()
-    {
-        try{
-            $user = request()->user ?? null;
-            $page = request()->query('page', 1);
-            $products = $this->userService->getLikedProducts($user, $page);
-            return ApiResponse::success($products, 'Productos favoritos obtenidos con éxito');
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener productos favoritos", 500, $e->getMessage());
-        }
-    }
-
     public function getUserInfo(){
         try{
             $user = request()->user ?? null;
@@ -35,8 +23,8 @@ class UserController extends Controller
             $userModel = $this->userService->getUserInfo($user);
 
             return ApiResponse::success($userModel,"Información del usuario obtenida exitosamente");
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener la información del usuario",500, $e->getMessage());
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al obtener la información del usuario",$e->getStatusCode(), $e->getMessage());
         }
     }
 
@@ -53,9 +41,9 @@ class UserController extends Controller
             $updatedUser = $this->userService->updateUserInfo($user, $newInfo);
             $token = JWTUtil::generateToken(['user_id' => $updatedUser->user_id, 'email' => $updatedUser->email, 'role' => $updatedUser->role, 'username' => $updatedUser->username]);
 
-            return ApiResponse::success(["token" => $token, "data" => $updatedUser],"Información del usuario actualizada correctamente");
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al actualizar información del usuario",500, $e->getMessage());
+            return ApiResponse::success(["token" => $token, "data" => $updatedUser],"Información del usuario actualizada exitosamente");
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al actualizar información del usuario",$e->getStatusCode(), $e->getMessage());
         }
     }
 
@@ -65,8 +53,8 @@ class UserController extends Controller
 
             $address = $this->userService->getUserAddress($user);
             return ApiResponse::success($address,"Dirección obtenida exitosamente");
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener la dirección del usuario",500, $e->getMessage());
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al obtener la dirección del usuario",$e->getStatusCode(), $e->getMessage());
         }
     }
 
@@ -83,9 +71,9 @@ class UserController extends Controller
             ];
 
             $updatedAddress = $this->userService->updateUserAddress($user, $newAddress);
-            return ApiResponse::success($updatedAddress,"Dirección del usuario actualizada correctamente");
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al actualizar la dirección del usuario",500, $e->getMessage());
+            return ApiResponse::success($updatedAddress,"Dirección del usuario actualizada exitosamente");
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrión un error al actualizar la dirección del usuario",$e->getStatusCode(), $e->getMessage());
         }
     }
 
@@ -99,8 +87,9 @@ class UserController extends Controller
             ];
 
             $this->userService->updateUserPassword($user, $newPassword);
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al cambiar la contraseña",500, $e->getMessage());
+            return ApiResponse::success(null,"Contraseña actualizada exitosamente");
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al cambiar la contraseña",$e->getStatusCode(), $e->getMessage());
         }
     }
 }

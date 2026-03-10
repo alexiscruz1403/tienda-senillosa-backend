@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\AuthService;
 use App\Services\CartService;
 use App\Http\Responses\ApiResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthController extends Controller
 {
@@ -23,9 +24,9 @@ class AuthController extends Controller
         try{
             $userData = $request->all();
             $token = $this->authService->register($userData);
-            return ApiResponse::success(['token' => $token], 'Usuario registrado exitosamente', 201);
-        }catch(\Exception $e){
-            return ApiResponse::error('Error al registrar el usuario', 500, [$e->getMessage()]);
+            return ApiResponse::success(['token' => $token], 'Registro completado exitosamente', 201);
+        }catch(HttpException $e){
+            return ApiResponse::error('Ocurrió un error al registrar', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -35,9 +36,9 @@ class AuthController extends Controller
             $credentials = $request->all();
             $token = $this->authService->login($credentials);
             $cartCount = $this->cartService->getCartCount($token['user_id']);
-            return ApiResponse::success(['token' => $token, 'cartCount' => $cartCount], 'Inicio de sesión exitoso', 200);
-        }catch(\Exception $e){
-            return ApiResponse::error('Error al iniciar sesión', 500, [$e->getMessage()]);
+            return ApiResponse::success(['token' => $token], 'Inicio de sesión compleato exitosamente', 200);
+        }catch(HttpException $e){
+            return ApiResponse::error('Ocurrió un error al iniciar sesión', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -50,7 +51,7 @@ class AuthController extends Controller
     {
         try{
             return $this->authService->callback();
-        }catch(\Exception $e){
+        }catch(HttpException $e){
             return redirect(
                 'http://localhost:5173/auth-error?message=' . urlencode($e->getMessage())
             );
@@ -63,8 +64,8 @@ class AuthController extends Controller
             $token = $request->bearerToken();
             $this->authService->validateToken($token);
             return ApiResponse::success(['valid' => true], 'Token válido', 200);
-        }catch(\Exception $e){
-            return ApiResponse::error('Token inválido', 401, [$e->getMessage()]);
+        }catch(HttpException $e){
+            return ApiResponse::error('Token inválido', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -74,8 +75,8 @@ class AuthController extends Controller
             $token = $request->bearerToken();
             $newToken = $this->authService->refreshToken($token);
             return ApiResponse::success(['token' => $newToken], 'Token refrescado exitosamente', 200);
-        }catch(\Exception $e){
-            return ApiResponse::error('Error al refrescar el token', 500, [$e->getMessage()]);
+        }catch(HttpException $e){
+            return ApiResponse::error('Ocurrió un error al regenerar el token', $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 }

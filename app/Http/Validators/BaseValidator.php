@@ -22,7 +22,7 @@ abstract class BaseValidator
 
         $validator = Validator::make($data, $rules);
 
-        if ($validator->fails()) throw new \InvalidArgumentException($validator->errors()->first());
+        if ($validator->fails()) throw new \InvalidArgumentException($validator->errors()->first(), 422);
 
         return true;
     }

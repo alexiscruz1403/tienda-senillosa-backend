@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\ProductService;
 use App\Http\Responses\ApiResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ProductController extends Controller
 {
@@ -18,10 +19,10 @@ class ProductController extends Controller
     {
         try{
             $user = request()->user ?? null;
-            $products = $this->productService->getFeaturedProducts($user);
-            return ApiResponse::success($products, 'Productos destacados obtenidos con éxito');
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener productos destacados", 500, $e->getMessage());
+            $products = $this->productService->getFeaturedProducts();
+            return ApiResponse::success($products, 'Productos destacados obtenidos exitosamente');
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al obtener productos destacados", $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -31,8 +32,8 @@ class ProductController extends Controller
             $user = request()->user ?? null;
             $message = $this->productService->likeProduct($user, $productId);
             return ApiResponse::success(null, $message);
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al procesar la solicitud de favorito", 500, $e->getMessage());
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al procesar el Me Gusta", $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -40,9 +41,9 @@ class ProductController extends Controller
     {
         try{
             $product = $this->productService->getSingleProduct($productId);
-            return ApiResponse::success($product, 'Producto obtenido con éxito');
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener el producto", 500, $e->getMessage());
+            return ApiResponse::success($product, 'Producto obtenido exitosamente');
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al obtener el producto", $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -50,9 +51,9 @@ class ProductController extends Controller
     {
         try{
             $products = $this->productService->getRelatedProducts($productId);
-            return ApiResponse::success($products, 'Productos relacionados obtenidos con éxito');
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener productos relacionados", 500, $e->getMessage());
+            return ApiResponse::success($products, 'Productos relacionados obtenidos exitosamente');
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al obtener productos relacionados", $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 
@@ -66,9 +67,9 @@ class ProductController extends Controller
             $page = request()->query('page', 1);
 
             $products = $this->productService->getManyProducts($search, $category, $gender, $page, $ordering);
-            return ApiResponse::success($products, 'Productos obtenidos con éxito');
-        }catch(\Exception $e){
-            return ApiResponse::error("Error al obtener productos", 500, $e->getMessage());
+            return ApiResponse::success($products, 'Productos obtenidos con exitosamente');
+        }catch(HttpException $e){
+            return ApiResponse::error("Ocurrió un error al obtener productos", $e->getStatusCode(), [$e->getMessage()]);
         }
     }
 }
